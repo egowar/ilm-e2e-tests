@@ -59,7 +59,7 @@ One UI E2E test that walks the whole user journey:
 1. **Setup (API):** delete any leftover `Dummy Root CA` certificates, record the
    current `totalCertificates` statistic as the baseline.
 2. **Import (UI):** open `/#/certificates`, open the *Upload Certificate* dialog,
-   attach `fixtures/root-ca.cert.pem`, submit.
+   attach `test-data/certs/root-ca.cert.pem`, submit.
 3. **List (UI):** poll the list until the new row appears (the upload endpoint is
    asynchronous), assert the Common Name link and the `X.509` type badge.
 4. **Stored entity (API):** fetch the certificate detail and assert
@@ -97,8 +97,8 @@ One UI E2E test that walks the whole user journey:
 - **Authentication:** the platform authenticates via the `ssl-client-cert`
   header carrying the URL-encoded base64 certificate. The browser gets it from
   the Vite proxy (`setupProxy.js`); the API client in these tests builds the
-  same header from `fixtures/admin.cert.pem` (a public dummy certificate from
-  the same repository — no real secret is committed).
+  same header from `test-data/auth/admin.cert.pem` (a public dummy certificate
+  from the same repository — no real secret is committed).
 - **Async upload:** the UI uses `POST /v1/certificates/upload/async`; the list
   may not show the certificate immediately. The test polls with reloads
   (60 s budget) instead of relying on a fixed sleep.
@@ -136,9 +136,17 @@ tests/
 pages/
   api-client.ts        # thin Core REST client + raw (non-asserting) probes
   certificates-page.ts # page object for the Certificates list / dashboard / upload dialog
-  certs.ts             # fixtures, PEM→base64 helper, negative payloads
+  certs.ts             # test-data paths, PEM→base64 helper, negative payloads
   contract.ts          # lightweight response-shape assertions
+test-data/
+  certs/root-ca.cert.pem  # the certificate under test (imported & asserted on)
+  auth/admin.cert.pem     # API-client credential (test infrastructure, not a test subject)
 ```
+
+> Naming note: this is called `test-data/`, not `fixtures/`, because
+> "fixtures" is a reserved Playwright concept (`test.extend()`-based
+> dependency injection). Naming a folder of static PEM files `fixtures/`
+> would collide with that meaning.
 
 ### Test levels — why each check lives where it does
 
@@ -286,5 +294,5 @@ bringing the environment up and the fixes applied:
   install outside the sandbox so it landed in `~/Library/Caches/ms-playwright`.
 - **API auth for the tests.** The browser gets the `ssl-client-cert` header from
   the Vite dev-server proxy (`setupProxy.js`); the test API client reproduces the
-  same header from the public `fixtures/admin.cert.pem` so API setup/cleanup and
-  security probes work without the browser.
+  same header from the public `test-data/auth/admin.cert.pem` so API
+  setup/cleanup and security probes work without the browser.

@@ -1,11 +1,24 @@
 import fs from 'fs';
 import path from 'path';
 
-export const FIXTURES_DIR = path.resolve(__dirname, '..', 'fixtures');
-export const ROOT_CA_FIXTURE = path.join(FIXTURES_DIR, 'root-ca.cert.pem');
-export const ADMIN_CERT_FIXTURE = path.join(FIXTURES_DIR, 'admin.cert.pem');
+const TEST_DATA_DIR = path.resolve(__dirname, '..', 'test-data');
 
-/** Expected properties of the imported certificate (fixtures/root-ca.cert.pem). */
+/**
+ * The certificate under test — imported through the UI/API and asserted on.
+ * Kept separate from auth material below: this file is test *data*, not
+ * test *infrastructure*.
+ */
+export const ROOT_CA_FIXTURE = path.join(TEST_DATA_DIR, 'certs', 'root-ca.cert.pem');
+
+/**
+ * The admin credential used to authenticate the API client. This is test
+ * *infrastructure* (never asserted on), so it lives under test-data/auth/
+ * rather than alongside the certificate that is the actual subject of the
+ * tests.
+ */
+export const ADMIN_CERT_FIXTURE = path.join(TEST_DATA_DIR, 'auth', 'admin.cert.pem');
+
+/** Expected properties of the imported certificate (test-data/certs/root-ca.cert.pem). */
 export const ROOT_CA = {
     commonName: 'Dummy Root CA',
     certificateType: 'X.509',
