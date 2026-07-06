@@ -1,0 +1,18 @@
+{
+    "name": "ilm-e2e-tests",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Playwright E2E tests for the ILM platform — certificate import scenario",
+    "scripts": {
+        "test": "playwright test tests/ui/certificate-import.spec.ts",
+        "test:headed": "playwright test tests/ui/certificate-import.spec.ts --headed",
+        "test:extended": "playwright test",
+        "test:ui": "playwright test --ui",
+        "report": "playwright show-report"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.49.0",
+        "@types/node": "^26.1.0",
+        "typescript": "^5.7.0"
+    }
+}
