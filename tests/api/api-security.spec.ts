@@ -98,16 +98,16 @@ test.describe('API8 — Security misconfiguration', () => {
         expect((detail as unknown as Record<string, unknown>).owner ?? '').not.toBe('attacker');
 
         // API3 — Excessive data exposure: the detail response must not carry
-        // private key material or obvious internal fields.
+        // actual private key material. Checked two ways: no field literally
+        // named `privateKey` holding key content (distinct from the legitimate
+        // boolean `privateKeyAvailability` flag the API returns), and no raw
+        // PEM private-key block embedded anywhere in the payload.
+        expect(
+            (detail as unknown as Record<string, unknown>).privateKey,
+            'response must not include a "privateKey" field with key material',
+        ).toBeUndefined();
         const raw = JSON.stringify(detail).toLowerCase();
-        for (const secret of [
-            'privatekey',
-            'private_key',
-            'begin private key',
-            'begin rsa private key',
-            'begin ec private key',
-            'begin encrypted private key',
-        ]) {
+        for (const secret of ['begin private key', 'begin rsa private key', 'begin ec private key', 'begin encrypted private key']) {
             expect(raw, `response must not expose "${secret}"`).not.toContain(secret);
         }
     });

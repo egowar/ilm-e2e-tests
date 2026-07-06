@@ -5,7 +5,8 @@ certificate and verify it's processed correctly (Common Name, certificate
 type, list, and Certificates Dashboard).
 
 **The assignment asks for one test — `tests/ui/certificate-import.spec.ts`,
-run by `npm test`.** Everything else (API variant, contract checks, security
+run by `npm test`.
+** Everything else (API variant, contract checks, security
 checks, UI negatives) is optional and lives under `npm run test:extended`, so
 the core deliverable stays exactly as scoped.
 
@@ -28,7 +29,7 @@ npm run test:extended  # optional: API variant + contract + security + UI negati
 npm run report         # open the last HTML report
 ```
 
-> `test:extended` contains 3 intentionally red tests documenting 2 real
+> `test:extended` contains 4 intentionally red tests documenting 3 real
 > server-side defects (see [Findings](#findings)). `npm test` is unaffected.
 
 Env overrides: `BASE_URL` (default `http://localhost:5173`), `API_URL`
@@ -98,14 +99,18 @@ this surface.
 
 ### Findings
 
-Two real defects, found and kept **visible** via `expect.soft` (so the run
-goes red instead of the bug being hidden or silently skipped):
+Three real defects, found by running against the live platform and kept
+**visible** via `expect.soft` (so the run goes red instead of the bug being
+hidden or silently skipped):
 
 1. **Invalid input → `500`, not `400`.** Empty/garbage certificate content
    returns `HTTP 500` instead of a `400 Bad Request`. Hard invariants (request
    rejected, no stack-trace leak) still pass.
 2. **`customAttributes` required per docs, optional in practice.** Upload
    without it succeeds (`201`) though the docs mark it required.
+3. **`itemsPerPage` cap not enforced.** The docs constrain list requests to
+   `itemsPerPage <= 1000`; sending `5000` returns `200` with `itemsPerPage: 5000`
+   echoed back unclamped instead of being rejected or capped.
 
 ### Manual/exploratory (not automated)
 

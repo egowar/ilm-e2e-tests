@@ -70,20 +70,23 @@ test('POST /v1/certificates returns the documented paginated list envelope', asy
     }
 });
 
-test('contract: itemsPerPage above the documented max (1000) is not honored', async () => {
+test('contract: itemsPerPage above the documented max (1000) is not honored (documented defect)', async () => {
     const res = await api.rawList({ filters: [], itemsPerPage: 5000, pageNumber: 1 });
 
-    // The docs cap itemsPerPage at <= 1000. A well-behaved API either rejects
-    // the oversized request (400) or clamps the page size — but it must never
-    // echo 5000 back as the effective page size.
+    // Hard invariant: the request must not blow up server-side either way.
+    expect(res.status(), 'oversized itemsPerPage must not be a server error').toBeLessThan(500);
+
     if (res.status() === 200) {
         const body = await res.json();
-        expect(body.itemsPerPage, 'page size must be capped at the documented 1000').toBeLessThanOrEqual(1000);
+        // Soft assertion — the docs cap itemsPerPage at <= 1000, but the API
+        // accepts 5000 and echoes it back unclamped (200). This DEFECT is kept
+        // visible via expect.soft rather than hidden behind a passing test.
+        expect
+            .soft(body.itemsPerPage, 'DEFECT: itemsPerPage should be capped at the documented 1000, API echoed back 5000 unclamped')
+            .toBeLessThanOrEqual(1000);
     } else {
-        // Any 4xx (400/413/422) is an acceptable rejection; only a 2xx that
-        // echoes 5000 back would be a contract violation.
+        // A 4xx rejection would also satisfy the documented contract.
         expect(res.status(), 'oversized itemsPerPage should be a client error').toBeGreaterThanOrEqual(400);
-        expect(res.status(), 'oversized itemsPerPage should not be a server error').toBeLessThan(500);
     }
 });
 
